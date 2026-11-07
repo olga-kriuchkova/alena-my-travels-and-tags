@@ -1,0 +1,1058 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>My Travels and Tags</title>
+
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        /* MAIN LAYOUT */
+
+        #layout {
+            display: grid;
+            grid-template-columns: 70% 30%;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            background: #ffffff;
+        }
+
+        /* RIGHT PANEL */
+
+        #sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            min-width: 0;
+            overflow-y: auto;
+            padding: 28px;
+            background: #ffffff;
+            border-left: 1px solid #e5e5e5;
+        }
+
+        #sidebar-main {
+            flex: 1 0 auto;
+        }
+
+        #sidebar h1 {
+            margin: 0 0 28px;
+            font-size: 23px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        #place-title {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* ADDRESS BELOW CITY NAME */
+
+        #place-address {
+            margin: 0 0 22px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.6;
+            color: #777777;
+        }
+
+        #place-description {
+            margin: 0 0 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #888888;
+        }
+
+        /* PHOTO GALLERY */
+
+        #photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            align-content: start;
+            padding-bottom: 28px;
+        }
+
+        .gallery-photo {
+            display: block;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: zoom-in;
+            transition: opacity 0.2s ease;
+        }
+
+        .gallery-photo:hover {
+            opacity: 0.85;
+        }
+
+        /* PHOTO VIEWER */
+
+        #photo-viewer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 48px;
+            background: rgba(0, 0, 0, 0.88);
+            cursor: zoom-out;
+        }
+
+        #photo-viewer.open {
+            display: flex;
+        }
+
+        #photo-viewer img {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+            cursor: default;
+        }
+
+        #close-photo-viewer {
+            position: absolute;
+            top: 14px;
+            right: 24px;
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 34px;
+            cursor: pointer;
+        }
+
+        /* LOWER RIGHT PANEL */
+
+        #sidebar-bottom {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        /* LEGEND */
+
+        #legend {
+            padding-top: 22px;
+            border-top: 1px solid #eeeeee;
+        }
+
+        #legend h3 {
+            margin: 0 0 16px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        #legend-items {
+            display: grid;
+            grid-template-rows: repeat(5, auto);
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(0, 1fr);
+            gap: 10px 14px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-russia {
+            background: linear-gradient(
+                to bottom, #fefe33, #fff7ad
+            );
+        }
+
+        .legend-denmark {
+            background: linear-gradient(
+                to bottom, #280cfb, #d7d0ff
+            );
+        }
+
+        .legend-france {
+            background: linear-gradient(
+                to bottom, #ff00b2, #ffd5f3
+            );
+        }
+
+        /* MAP SOURCES AT BOTTOM RIGHT */
+
+        #map-credits {
+            margin-top: 28px;
+            padding-top: 14px;
+            border-top: 1px solid #eeeeee;
+            color: #444444;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: right;
+        }
+
+        #map-credits a {
+            color: #185d91;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        #map-credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* MOBILE LAYOUT */
+
+        @media (max-width: 750px) {
+            body {
+                overflow: auto;
+            }
+
+            #layout {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: 100dvh;
+            }
+
+            #map {
+                height: 60dvh;
+                min-height: 350px;
+                flex-shrink: 0;
+            }
+
+            #sidebar {
+                height: auto;
+                min-height: 40dvh;
+                padding: 22px;
+                overflow: visible;
+            }
+
+            #sidebar-main {
+                flex: 0 0 auto;
+            }
+
+            #sidebar-bottom {
+                margin-top: 40px;
+            }
+
+            #photo-viewer {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="layout">
+
+        <div id="map"></div>
+
+        <aside id="sidebar">
+
+            <div id="sidebar-main">
+
+                <h1>My Travels and Tags</h1>
+
+                <section id="place-info">
+
+                    <h2 id="place-title">
+                        Select a location
+                    </h2>
+
+                    <p id="place-address"></p>
+
+                    <p id="place-description">
+                        Click a cat on the map to explore a place.
+                    </p>
+
+                    <div id="photo-gallery"></div>
+
+                </section>
+
+            </div>
+
+            <div id="sidebar-bottom">
+
+                <section id="legend">
+
+                    <h3>Legend</h3>
+
+                    <div id="legend-items">
+
+                        <div class="legend-row">
+                            <span class="legend-color legend-russia"></span>
+                            <span>Russia</span>
+                        </div>
+
+                        <div class="legend-row">
+                            <span class="legend-color legend-denmark"></span>
+                            <span>Denmark</span>
+                        </div>
+
+                        <div class="legend-row">
+                            <span class="legend-color legend-france"></span>
+                            <span>France</span>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <footer id="map-credits">
+                    <a href="https://leafletjs.com/"
+                       target="_blank"
+                       rel="noopener noreferrer">Leaflet</a>
+                    |
+                    &copy;
+                    <a href="https://www.openstreetmap.org/copyright"
+                       target="_blank"
+                       rel="noopener noreferrer">OpenStreetMap contributors</a>
+                </footer>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+    <!-- FULL-SIZE PHOTO VIEWER -->
+
+    <div id="photo-viewer"
+         role="dialog"
+         aria-label="Photo viewer"
+         aria-modal="true">
+
+        <button id="close-photo-viewer"
+                aria-label="Close photo">×</button>
+
+        <img id="viewer-image" alt="Travel photo">
+
+    </div>
+
+    <!-- LEAFLET LIBRARIES -->
+
+    <script src="js/leaflet.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+
+    <!-- QGIS EXPORTED DATA -->
+
+    <script src="data/Russia_1.js"></script>
+    <script src="data/Denmark_2.js"></script>
+    <script src="data/France_3.js"></script>
+    <script src="data/Pins_4.js"></script>
+
+    <script>
+
+        // ============================================
+        // MAP BOUNDS
+        // ============================================
+
+        var worldBounds = L.latLngBounds(
+            [-85, -180],
+            [85, 180]
+        );
+
+        // ============================================
+        // MAP INITIALIZATION
+        // ============================================
+
+        var map = L.map('map', {
+            zoomControl: true,
+            minZoom: 2,
+            maxZoom: 19,
+            preferCanvas: false,
+
+            maxBounds: worldBounds,
+            maxBoundsViscosity: 1.0,
+
+            worldCopyJump: false,
+            attributionControl: false
+        });
+
+        map.fitBounds([
+            [39.38045544558549, -6.926092115912226],
+            [63.19503550981542, 61.0810361472603]
+        ]);
+
+        var hash = new L.Hash(map);
+
+        // ============================================
+        // OPENSTREETMAP BASE LAYER
+        // ============================================
+
+        var osmLayer = L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:
+                    '&copy; OpenStreetMap contributors',
+
+                minZoom: 2,
+                maxZoom: 19,
+
+                noWrap: true,
+                bounds: worldBounds
+            }
+        );
+
+        osmLayer.addTo(map);
+
+        // ============================================
+        // COUNTRY GRADIENTS
+        //
+        // Temporary visual parameters.
+        // Later these will be read from QGIS.
+        // ============================================
+
+        var countryStyles = {
+
+            Russia: {
+                start: '#fefe33',
+                end: '#fff7ad',
+                border: '#fefe33',
+                opacity: 0.75,
+                x1: '0%',
+                y1: '0%',
+                x2: '0%',
+                y2: '100%'
+            },
+
+            Denmark: {
+                start: '#280cfb',
+                end: '#d7d0ff',
+                border: '#280cfb',
+                opacity: 0.75,
+                x1: '0%',
+                y1: '0%',
+                x2: '0%',
+                y2: '100%'
+            },
+
+            France: {
+                start: '#ff00b2',
+                end: '#ffd5f3',
+                border: '#ff00b2',
+                opacity: 0.75,
+                x1: '0%',
+                y1: '0%',
+                x2: '0%',
+                y2: '100%'
+            }
+
+        };
+
+        // ============================================
+        // SVG GRADIENT HELPERS
+        // ============================================
+
+        var svgNamespace =
+            'http://www.w3.org/2000/svg';
+
+        function createSvgElement(tagName) {
+            return document.createElementNS(
+                svgNamespace,
+                tagName
+            );
+        }
+
+        function ensureGradient(svg, id, settings) {
+
+            if (!svg) {
+                return;
+            }
+
+            var defs = svg.querySelector('defs');
+
+            if (!defs) {
+                defs = createSvgElement('defs');
+                svg.insertBefore(defs, svg.firstChild);
+            }
+
+            var gradient = Array.from(
+                defs.querySelectorAll('linearGradient')
+            ).find(function(element) {
+                return element.getAttribute('id') === id;
+            });
+
+            if (gradient) {
+                gradient.remove();
+            }
+
+            gradient = createSvgElement('linearGradient');
+
+            gradient.setAttribute('id', id);
+
+            gradient.setAttribute(
+                'gradientUnits',
+                'objectBoundingBox'
+            );
+
+            gradient.setAttribute('x1', settings.x1);
+            gradient.setAttribute('y1', settings.y1);
+            gradient.setAttribute('x2', settings.x2);
+            gradient.setAttribute('y2', settings.y2);
+
+            var firstStop = createSvgElement('stop');
+
+            firstStop.setAttribute('offset', '0%');
+            firstStop.setAttribute(
+                'stop-color',
+                settings.start
+            );
+
+            var secondStop = createSvgElement('stop');
+
+            secondStop.setAttribute('offset', '100%');
+            secondStop.setAttribute(
+                'stop-color',
+                settings.end
+            );
+
+            gradient.appendChild(firstStop);
+            gradient.appendChild(secondStop);
+
+            defs.appendChild(gradient);
+        }
+
+        function applyGradientToShape(
+            shape,
+            gradientId,
+            settings
+        ) {
+
+            if (!shape._path || !shape._renderer) {
+                return;
+            }
+
+            var svg = shape._renderer._container;
+
+            ensureGradient(
+                svg,
+                gradientId,
+                settings
+            );
+
+            shape._path.setAttribute(
+                'fill',
+                'url(#' + gradientId + ')'
+            );
+
+            shape._path.style.fill =
+                'url(#' + gradientId + ')';
+
+            shape._path.setAttribute(
+                'fill-opacity',
+                String(settings.opacity)
+            );
+        }
+
+        // ============================================
+        // COUNTRY LAYERS
+        // ============================================
+
+        function addCountry(
+            countryName,
+            geojsonData,
+            paneIndex
+        ) {
+
+            var settings = countryStyles[countryName];
+            var paneName = 'pane_' + countryName;
+
+            map.createPane(paneName);
+
+            map.getPane(paneName).style.zIndex =
+                paneIndex;
+
+            var gradientId =
+                'gradient_' + countryName;
+
+            var countryLayer = L.geoJSON(
+                geojsonData,
+                {
+                    pane: paneName,
+
+                    interactive: false,
+
+                    style: function() {
+                        return {
+                            color: settings.border,
+                            weight: 1,
+                            opacity: 1,
+                            fillColor: settings.start,
+                            fillOpacity: settings.opacity,
+                            interactive: false
+                        };
+                    }
+                }
+            );
+
+            countryLayer.addTo(map);
+
+            function updateCountryGradient() {
+
+                countryLayer.eachLayer(function(shape) {
+
+                    applyGradientToShape(
+                        shape,
+                        gradientId,
+                        settings
+                    );
+
+                });
+            }
+
+            requestAnimationFrame(
+                updateCountryGradient
+            );
+
+            countryLayer.on('add', function() {
+                requestAnimationFrame(
+                    updateCountryGradient
+                );
+            });
+
+            return countryLayer;
+        }
+
+        var layer_Russia_1 = addCountry(
+            'Russia',
+            json_Russia_1,
+            401
+        );
+
+        var layer_Denmark_2 = addCountry(
+            'Denmark',
+            json_Denmark_2,
+            402
+        );
+
+        var layer_France_3 = addCountry(
+            'France',
+            json_France_3,
+            403
+        );
+
+        // ============================================
+        // CAT MARKER SIZES
+        // ============================================
+
+        function createCatIcon() {
+
+            var zoom = map.getZoom();
+            var size;
+
+            if (zoom <= 3) {
+                size = 21;
+            } else if (zoom <= 14) {
+                size = 25;
+            } else if (zoom <= 16) {
+                size = 30;
+            } else {
+                size = 38;
+            }
+
+            return L.icon({
+                iconUrl: 'images/Group 8.png',
+                iconSize: [size, size],
+                iconAnchor: [size / 2, size / 2],
+                popupAnchor: [0, -size / 2]
+            });
+        }
+
+        // ============================================
+        // ADDRESS DATA
+        //
+        // Temporary fallback for the old Pins_4.js.
+        // When QGIS exports the address field, the
+        // website will use it automatically instead.
+        // ============================================
+
+        var addressFallback = {
+
+            '1': 'Lev Yashin Street 1, Tolyatti, Russia',
+
+            '2': 'Voznesensky Prospekt 15-17, Saint Petersburg, Russia',
+
+            '3': 'Place Baudoyer, 4, Paris, France',
+
+            '4': 'Lygten 33, Copenhagen, Denmark'
+
+        };
+
+        function getPinId(feature) {
+
+            var properties = feature.properties || {};
+
+            if (
+                properties.fid !== undefined &&
+                properties.fid !== null
+            ) {
+                return String(properties.fid);
+            }
+
+            return String(feature.id);
+        }
+
+        // ============================================
+        // PHOTO DATA FROM QGIS
+        // ============================================
+
+        var photosByPin = {};
+        var selectedFeature = null;
+        var photosLoaded = false;
+
+        function photoFileUrl(filename) {
+
+            var normalized = String(filename || '')
+                .replace(/\\/g, '/');
+
+            var basename = normalized
+                .split('/')
+                .pop();
+
+            return 'Photos/' +
+                encodeURIComponent(basename);
+        }
+
+        function loadPhotos() {
+
+            fetch('data/photos.json')
+
+                .then(function(response) {
+
+                    if (!response.ok) {
+                        throw new Error(
+                            'Photo data is not available'
+                        );
+                    }
+
+                    return response.json();
+                })
+
+                .then(function(records) {
+
+                    photosByPin = {};
+
+                    if (!Array.isArray(records)) {
+                        throw new Error(
+                            'Expected an array of photo records'
+                        );
+                    }
+
+                    records.forEach(function(record) {
+
+                        var pinId = String(record.pin_id);
+                        var filename = record.photo;
+
+                        if (!filename) {
+                            return;
+                        }
+
+                        if (!photosByPin[pinId]) {
+                            photosByPin[pinId] = [];
+                        }
+
+                        photosByPin[pinId].push(
+                            photoFileUrl(filename)
+                        );
+                    });
+
+                    photosLoaded = true;
+
+                    if (selectedFeature) {
+                        showPlace(selectedFeature);
+                    }
+                })
+
+                .catch(function(error) {
+
+                    photosLoaded = false;
+
+                    console.warn(
+                        'Photo data could not be loaded:',
+                        error.message
+                    );
+
+                    if (selectedFeature) {
+                        showPlace(selectedFeature);
+                    }
+                });
+        }
+
+        // ============================================
+        // FULL-SIZE PHOTO VIEWER
+        // ============================================
+
+        var photoViewer =
+            document.getElementById('photo-viewer');
+
+        var viewerImage =
+            document.getElementById('viewer-image');
+
+        function openPhoto(src) {
+
+            viewerImage.src = src;
+            photoViewer.classList.add('open');
+        }
+
+        function closePhoto() {
+
+            photoViewer.classList.remove('open');
+            viewerImage.removeAttribute('src');
+        }
+
+        document.getElementById(
+            'close-photo-viewer'
+        ).addEventListener('click', closePhoto);
+
+        photoViewer.addEventListener(
+            'click',
+            function(event) {
+
+                if (event.target === photoViewer) {
+                    closePhoto();
+                }
+            }
+        );
+
+        document.addEventListener(
+            'keydown',
+            function(event) {
+
+                if (event.key === 'Escape') {
+                    closePhoto();
+                }
+            }
+        );
+
+        // ============================================
+        // SHOW SELECTED PLACE IN RIGHT PANEL
+        // ============================================
+
+        function showPlace(feature) {
+
+            selectedFeature = feature;
+
+            var properties = feature.properties || {};
+
+            var placeName =
+                properties.name || 'Unknown location';
+
+            var pinId = getPinId(feature);
+
+            var placeAddress =
+                properties.address ||
+                addressFallback[pinId] ||
+                '';
+
+            document.getElementById(
+                'place-title'
+            ).textContent = placeName;
+
+            document.getElementById(
+                'place-address'
+            ).textContent = placeAddress;
+
+            var description =
+                document.getElementById(
+                    'place-description'
+                );
+
+            var gallery =
+                document.getElementById(
+                    'photo-gallery'
+                );
+
+            gallery.innerHTML = '';
+
+            if (!photosLoaded) {
+
+                description.textContent =
+                    'Photos will appear here soon.';
+
+                return;
+            }
+
+            var photos = photosByPin[pinId] || [];
+
+            if (photos.length === 0) {
+
+                description.textContent =
+                    'No photos available for this location.';
+
+                return;
+            }
+
+            description.textContent =
+                photos.length === 1
+                    ? '1 photo'
+                    : photos.length + ' photos';
+
+            photos.forEach(function(src, index) {
+
+                var img = document.createElement('img');
+
+                img.className = 'gallery-photo';
+                img.src = src;
+
+                img.alt = placeName +
+                    ' — photo ' + (index + 1);
+
+                img.loading = 'lazy';
+
+                img.addEventListener(
+                    'click',
+                    function() {
+                        openPhoto(src);
+                    }
+                );
+
+                img.addEventListener(
+                    'error',
+                    function() {
+
+                        img.style.display = 'none';
+
+                        console.warn(
+                            'Could not load photo:',
+                            src
+                        );
+                    }
+                );
+
+                gallery.appendChild(img);
+            });
+        }
+
+        // ============================================
+        // PINS
+        // ============================================
+
+        map.createPane('pane_Pins_4');
+
+        map.getPane(
+            'pane_Pins_4'
+        ).style.zIndex = 404;
+
+        var layer_Pins_4 = L.geoJSON(
+            json_Pins_4,
+            {
+
+                pane: 'pane_Pins_4',
+
+                pointToLayer: function(
+                    feature,
+                    latlng
+                ) {
+
+                    return L.marker(latlng, {
+                        icon: createCatIcon(),
+                        pane: 'pane_Pins_4'
+                    });
+                },
+
+                onEachFeature: function(
+                    feature,
+                    layer
+                ) {
+
+                    var placeName =
+                        feature.properties &&
+                        feature.properties.name
+                        ? feature.properties.name
+                        : 'Location';
+
+                    layer.bindPopup(placeName);
+
+                    layer.on('click', function() {
+                        showPlace(feature);
+                    });
+                }
+            }
+        );
+
+        layer_Pins_4.addTo(map);
+
+        // ============================================
+        // DYNAMIC CAT SIZE
+        // ============================================
+
+        map.on('zoomend', function() {
+
+            var icon = createCatIcon();
+
+            layer_Pins_4.eachLayer(
+                function(layer) {
+
+                    if (layer instanceof L.Marker) {
+                        layer.setIcon(icon);
+                    }
+                }
+            );
+        });
+
+        // ============================================
+        // MAP RESIZING
+        // ============================================
+
+        requestAnimationFrame(function() {
+            map.invalidateSize();
+        });
+
+        window.addEventListener(
+            'resize',
+            function() {
+                map.invalidateSize();
+            }
+        );
+
+        // ============================================
+        // LOAD PHOTOS
+        // ============================================
+
+        loadPhotos();
+
+    </script>
+
+</body>
+</html>
