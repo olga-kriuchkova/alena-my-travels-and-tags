@@ -1,6 +1,7 @@
 
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,11 +13,13 @@
     <link rel="stylesheet" href="css/qgis2web.css">
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -76,8 +79,6 @@
             font-weight: 600;
         }
 
-        /* ADDRESS BELOW CITY NAME */
-
         #place-address {
             margin: 0 0 22px;
             font-size: 14px;
@@ -97,7 +98,10 @@
 
         #photo-gallery {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(
+                2,
+                minmax(0, 1fr)
+            );
             gap: 10px;
             align-content: start;
             padding-bottom: 28px;
@@ -198,22 +202,16 @@
             flex-shrink: 0;
         }
 
-        .legend-russia {
-            background: linear-gradient(
-                to bottom, #fefe33, #fff7ad
-            );
+        .legend-name {
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
-        .legend-denmark {
-            background: linear-gradient(
-                to bottom, #280cfb, #d7d0ff
-            );
-        }
-
-        .legend-france {
-            background: linear-gradient(
-                to bottom, #ff00b2, #ffd5f3
-            );
+        .legend-message {
+            grid-column: 1 / -1;
+            color: #888888;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         /* MAP SOURCES AT BOTTOM RIGHT */
@@ -242,6 +240,7 @@
         /* MOBILE LAYOUT */
 
         @media (max-width: 750px) {
+
             body {
                 overflow: auto;
             }
@@ -277,7 +276,9 @@
             #photo-viewer {
                 padding: 16px;
             }
+
         }
+
     </style>
 </head>
 
@@ -318,35 +319,31 @@
                     <h3>Legend</h3>
 
                     <div id="legend-items">
-
-                        <div class="legend-row">
-                            <span class="legend-color legend-russia"></span>
-                            <span>Russia</span>
-                        </div>
-
-                        <div class="legend-row">
-                            <span class="legend-color legend-denmark"></span>
-                            <span>Denmark</span>
-                        </div>
-
-                        <div class="legend-row">
-                            <span class="legend-color legend-france"></span>
-                            <span>France</span>
-                        </div>
-
+                        <span class="legend-message">
+                            Loading countries...
+                        </span>
                     </div>
 
                 </section>
 
                 <footer id="map-credits">
-                    <a href="https://leafletjs.com/"
-                       target="_blank"
-                       rel="noopener noreferrer">Leaflet</a>
+
+                    <a
+                        href="https://leafletjs.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Leaflet</a>
+
                     |
+
                     &copy;
-                    <a href="https://www.openstreetmap.org/copyright"
-                       target="_blank"
-                       rel="noopener noreferrer">OpenStreetMap contributors</a>
+
+                    <a
+                        href="https://www.openstreetmap.org/copyright"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >OpenStreetMap contributors</a>
+
                 </footer>
 
             </div>
@@ -357,15 +354,22 @@
 
     <!-- FULL-SIZE PHOTO VIEWER -->
 
-    <div id="photo-viewer"
-         role="dialog"
-         aria-label="Photo viewer"
-         aria-modal="true">
+    <div
+        id="photo-viewer"
+        role="dialog"
+        aria-label="Photo viewer"
+        aria-modal="true"
+    >
 
-        <button id="close-photo-viewer"
-                aria-label="Close photo">×</button>
+        <button
+            id="close-photo-viewer"
+            aria-label="Close photo"
+        >×</button>
 
-        <img id="viewer-image" alt="Travel photo">
+        <img
+            id="viewer-image"
+            alt="Travel photo"
+        >
 
     </div>
 
@@ -374,20 +378,27 @@
     <script src="js/leaflet.js"></script>
     <script src="js/leaflet-hash.js"></script>
 
-    <!-- QGIS EXPORTED DATA -->
+    <!-- QGIS EXPORTED PINS -->
 
-    <script src="data/Russia_1.js"></script>
-    <script src="data/Denmark_2.js"></script>
-    <script src="data/France_3.js"></script>
     <script src="data/Pins_4.js"></script>
 
     <script>
 
         // ============================================
+        // PROJECT DATA FILES
+        // ============================================
+
+        const DATA_FILES = {
+            countries: 'data/countries.geojson',
+            styles: 'data/country_styles.json',
+            photos: 'data/photos.json'
+        };
+
+        // ============================================
         // MAP BOUNDS
         // ============================================
 
-        var worldBounds = L.latLngBounds(
+        const worldBounds = L.latLngBounds(
             [-85, -180],
             [85, 180]
         );
@@ -396,7 +407,8 @@
         // MAP INITIALIZATION
         // ============================================
 
-        var map = L.map('map', {
+        const map = L.map('map', {
+
             zoomControl: true,
             minZoom: 2,
             maxZoom: 19,
@@ -407,6 +419,7 @@
 
             worldCopyJump: false,
             attributionControl: false
+
         });
 
         map.fitBounds([
@@ -414,15 +427,16 @@
             [63.19503550981542, 61.0810361472603]
         ]);
 
-        var hash = new L.Hash(map);
+        const hash = new L.Hash(map);
 
         // ============================================
         // OPENSTREETMAP BASE LAYER
         // ============================================
 
-        var osmLayer = L.tileLayer(
+        const osmLayer = L.tileLayer(
             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
+
                 attribution:
                     '&copy; OpenStreetMap contributors',
 
@@ -431,127 +445,311 @@
 
                 noWrap: true,
                 bounds: worldBounds
+
             }
         );
 
         osmLayer.addTo(map);
 
         // ============================================
-        // COUNTRY GRADIENTS
-        //
-        // Temporary visual parameters.
-        // Later these will be read from QGIS.
+        // DYNAMIC COUNTRY DATA
         // ============================================
 
-        var countryStyles = {
+        const countryLayers = [];
+        const countryStyles = new Map();
 
-            Russia: {
-                start: '#fefe33',
-                end: '#fff7ad',
-                border: '#fefe33',
-                opacity: 0.75,
-                x1: '0%',
-                y1: '0%',
-                x2: '0%',
-                y2: '100%'
-            },
+        const legendItems = document.getElementById(
+            'legend-items'
+        );
 
-            Denmark: {
-                start: '#280cfb',
-                end: '#d7d0ff',
-                border: '#280cfb',
-                opacity: 0.75,
-                x1: '0%',
-                y1: '0%',
-                x2: '0%',
-                y2: '100%'
-            },
+        // ============================================
+        // DATA LOADING
+        // ============================================
 
-            France: {
-                start: '#ff00b2',
-                end: '#ffd5f3',
-                border: '#ff00b2',
-                opacity: 0.75,
-                x1: '0%',
-                y1: '0%',
-                x2: '0%',
-                y2: '100%'
+        async function loadJSON(url) {
+
+            const response = await fetch(url, {
+                cache: 'no-store'
+            });
+
+            if (!response.ok) {
+
+                throw new Error(
+                    'Could not load ' +
+                    url +
+                    ' (HTTP ' +
+                    response.status +
+                    ')'
+                );
+
             }
 
-        };
+            return await response.json();
+
+        }
 
         // ============================================
         // SVG GRADIENT HELPERS
         // ============================================
 
-        var svgNamespace =
+        const svgNamespace =
             'http://www.w3.org/2000/svg';
 
         function createSvgElement(tagName) {
+
             return document.createElementNS(
                 svgNamespace,
                 tagName
             );
+
         }
 
-        function ensureGradient(svg, id, settings) {
+        function safeOpacity(value, fallback = 1) {
+
+            const number = Number(value);
+
+            if (!Number.isFinite(number)) {
+                return fallback;
+            }
+
+            return Math.max(
+                0,
+                Math.min(1, number)
+            );
+
+        }
+
+        function safeColor(value, fallback) {
+
+            if (
+                typeof value === 'string' &&
+                /^#[0-9a-fA-F]{6}$/.test(value)
+            ) {
+                return value;
+            }
+
+            return fallback;
+
+        }
+
+        function normalizeCountryStyle(raw) {
+
+            if (
+                !raw ||
+                typeof raw !== 'object'
+            ) {
+                throw new Error(
+                    'Invalid country style record.'
+                );
+            }
+
+            const id = String(
+                raw.id || ''
+            ).trim();
+
+            if (!id) {
+
+                throw new Error(
+                    'Country style has no ID.'
+                );
+
+            }
+
+            const topColor = safeColor(
+                raw.top_color,
+                '#cccccc'
+            );
+
+            const bottomColor = safeColor(
+                raw.bottom_color,
+                '#ffffff'
+            );
+
+            const outlineColor = safeColor(
+                raw.outline_color,
+                topColor
+            );
+
+            const widthMM = Number(
+                raw.outline_width_mm
+            );
+
+            // Convert QGIS millimeters to CSS pixels.
+            // 1 CSS inch = 96 pixels.
+            // 1 inch = 25.4 millimeters.
+
+            const strokeWidth = (
+                Number.isFinite(widthMM)
+                && widthMM >= 0
+            )
+                ? widthMM * 96 / 25.4
+                : 1;
+
+            return {
+
+                id: id,
+
+                name: String(
+                    raw.name || id
+                ),
+
+                start: topColor,
+                end: bottomColor,
+                border: outlineColor,
+
+                topOpacity: safeOpacity(
+                    raw.top_opacity,
+                    0.5
+                ),
+
+                bottomOpacity: safeOpacity(
+                    raw.bottom_opacity,
+                    0.5
+                ),
+
+                borderOpacity: safeOpacity(
+                    raw.outline_opacity,
+                    1
+                ),
+
+                borderWidth: strokeWidth,
+
+                x1: '50%',
+                y1: '0%',
+                x2: '50%',
+                y2: '100%'
+
+            };
+
+        }
+
+        function ensureGradient(
+            svg,
+            gradientId,
+            settings
+        ) {
 
             if (!svg) {
                 return;
             }
 
-            var defs = svg.querySelector('defs');
+            let defs = svg.querySelector('defs');
 
             if (!defs) {
+
                 defs = createSvgElement('defs');
-                svg.insertBefore(defs, svg.firstChild);
+
+                svg.insertBefore(
+                    defs,
+                    svg.firstChild
+                );
+
             }
 
-            var gradient = Array.from(
+            let gradient = Array.from(
                 defs.querySelectorAll('linearGradient')
             ).find(function(element) {
-                return element.getAttribute('id') === id;
+
+                return (
+                    element.getAttribute('id')
+                    === gradientId
+                );
+
             });
 
-            if (gradient) {
-                gradient.remove();
+            if (!gradient) {
+
+                gradient = createSvgElement(
+                    'linearGradient'
+                );
+
+                gradient.setAttribute(
+                    'id',
+                    gradientId
+                );
+
+                defs.appendChild(gradient);
+
             }
-
-            gradient = createSvgElement('linearGradient');
-
-            gradient.setAttribute('id', id);
 
             gradient.setAttribute(
                 'gradientUnits',
                 'objectBoundingBox'
             );
 
-            gradient.setAttribute('x1', settings.x1);
-            gradient.setAttribute('y1', settings.y1);
-            gradient.setAttribute('x2', settings.x2);
-            gradient.setAttribute('y2', settings.y2);
+            gradient.setAttribute(
+                'x1',
+                settings.x1
+            );
 
-            var firstStop = createSvgElement('stop');
+            gradient.setAttribute(
+                'y1',
+                settings.y1
+            );
 
-            firstStop.setAttribute('offset', '0%');
+            gradient.setAttribute(
+                'x2',
+                settings.x2
+            );
+
+            gradient.setAttribute(
+                'y2',
+                settings.y2
+            );
+
+            gradient.replaceChildren();
+
+            const firstStop = createSvgElement(
+                'stop'
+            );
+
+            firstStop.setAttribute(
+                'offset',
+                '0%'
+            );
+
             firstStop.setAttribute(
                 'stop-color',
                 settings.start
             );
 
-            var secondStop = createSvgElement('stop');
+            firstStop.setAttribute(
+                'stop-opacity',
+                String(settings.topOpacity)
+            );
 
-            secondStop.setAttribute('offset', '100%');
+            const secondStop = createSvgElement(
+                'stop'
+            );
+
+            secondStop.setAttribute(
+                'offset',
+                '100%'
+            );
+
             secondStop.setAttribute(
                 'stop-color',
                 settings.end
             );
 
-            gradient.appendChild(firstStop);
-            gradient.appendChild(secondStop);
+            secondStop.setAttribute(
+                'stop-opacity',
+                String(settings.bottomOpacity)
+            );
 
-            defs.appendChild(gradient);
+            gradient.appendChild(
+                firstStop
+            );
+
+            gradient.appendChild(
+                secondStop
+            );
+
         }
+
+        // ============================================
+        // APPLY GRADIENT TO MAP POLYGON
+        // ============================================
 
         function applyGradientToShape(
             shape,
@@ -559,11 +757,15 @@
             settings
         ) {
 
-            if (!shape._path || !shape._renderer) {
+            if (
+                !shape._path ||
+                !shape._renderer
+            ) {
                 return;
             }
 
-            var svg = shape._renderer._container;
+            const svg =
+                shape._renderer._container;
 
             ensureGradient(
                 svg,
@@ -579,58 +781,112 @@
             shape._path.style.fill =
                 'url(#' + gradientId + ')';
 
+            // The transparency is stored in
+            // individual SVG gradient stops.
+
             shape._path.setAttribute(
                 'fill-opacity',
-                String(settings.opacity)
+                '1'
             );
+
+            shape._path.style.fillOpacity = '1';
+
+            shape._path.setAttribute(
+                'stroke',
+                settings.border
+            );
+
+            shape._path.setAttribute(
+                'stroke-opacity',
+                String(settings.borderOpacity)
+            );
+
+            shape._path.setAttribute(
+                'stroke-width',
+                String(settings.borderWidth)
+            );
+
         }
 
         // ============================================
-        // COUNTRY LAYERS
+        // CREATE COUNTRY LAYER
         // ============================================
 
         function addCountry(
-            countryName,
-            geojsonData,
-            paneIndex
+            countryId,
+            features,
+            settings,
+            index
         ) {
 
-            var settings = countryStyles[countryName];
-            var paneName = 'pane_' + countryName;
+            const paneName =
+                'pane_country_' + index;
 
             map.createPane(paneName);
 
-            map.getPane(paneName).style.zIndex =
-                paneIndex;
+            const pane = map.getPane(
+                paneName
+            );
 
-            var gradientId =
-                'gradient_' + countryName;
+            pane.style.zIndex = 401;
+            pane.style.pointerEvents = 'none';
 
-            var countryLayer = L.geoJSON(
-                geojsonData,
+            // Each country has its own SVG renderer.
+            // This avoids gradient ID collisions.
+
+            const renderer = L.svg({
+                pane: paneName,
+                padding: 0.5
+            });
+
+            const gradientId =
+                'country_gradient_' + index;
+
+            const collection = {
+
+                type: 'FeatureCollection',
+                features: features
+
+            };
+
+            const layer = L.geoJSON(
+                collection,
                 {
-                    pane: paneName,
 
+                    pane: paneName,
+                    renderer: renderer,
                     interactive: false,
 
                     style: function() {
+
                         return {
+
                             color: settings.border,
-                            weight: 1,
-                            opacity: 1,
-                            fillColor: settings.start,
-                            fillOpacity: settings.opacity,
+
+                            weight: settings.borderWidth,
+
+                            opacity:
+                                settings.borderOpacity,
+
+                            fillColor:
+                                settings.start,
+
+                            fillOpacity: 1,
+
                             interactive: false
+
                         };
+
                     }
+
                 }
             );
 
-            countryLayer.addTo(map);
+            layer.addTo(map);
 
-            function updateCountryGradient() {
+            function updateGradient() {
 
-                countryLayer.eachLayer(function(shape) {
+                layer.eachLayer(function(shape) {
 
                     applyGradientToShape(
                         shape,
@@ -639,38 +895,334 @@
                     );
 
                 });
+
             }
 
             requestAnimationFrame(
-                updateCountryGradient
+                updateGradient
             );
 
-            countryLayer.on('add', function() {
-                requestAnimationFrame(
-                    updateCountryGradient
-                );
+            layer.on(
+                'add',
+                function() {
+
+                    requestAnimationFrame(
+                        updateGradient
+                    );
+
+                }
+            );
+
+            countryLayers.push({
+
+                id: countryId,
+                layer: layer,
+                updateGradient: updateGradient
+
             });
 
-            return countryLayer;
+            return layer;
+
         }
 
-        var layer_Russia_1 = addCountry(
-            'Russia',
-            json_Russia_1,
-            401
-        );
+        // ============================================
+        // DYNAMIC LEGEND
+        // ============================================
 
-        var layer_Denmark_2 = addCountry(
-            'Denmark',
-            json_Denmark_2,
-            402
-        );
+        function showLegendMessage(message) {
 
-        var layer_France_3 = addCountry(
-            'France',
-            json_France_3,
-            403
-        );
+            legendItems.replaceChildren();
+
+            const item = document.createElement(
+                'span'
+            );
+
+            item.className = 'legend-message';
+            item.textContent = message;
+
+            legendItems.appendChild(item);
+
+        }
+
+        function addLegendItem(settings) {
+
+            const row = document.createElement(
+                'div'
+            );
+
+            row.className = 'legend-row';
+
+            const swatch = document.createElement(
+                'span'
+            );
+
+            swatch.className = 'legend-color';
+
+            // The legend uses the actual exported
+            // gradient colors and their transparency.
+
+            swatch.style.background =
+                'linear-gradient(' +
+                'to bottom, ' +
+                hexToRgba(
+                    settings.start,
+                    settings.topOpacity
+                ) +
+                ', ' +
+                hexToRgba(
+                    settings.end,
+                    settings.bottomOpacity
+                ) +
+                ')';
+
+            swatch.style.border =
+                '1px solid ' +
+                hexToRgba(
+                    settings.border,
+                    settings.borderOpacity
+                );
+
+            const name = document.createElement(
+                'span'
+            );
+
+            name.className = 'legend-name';
+            name.textContent = settings.name;
+
+            row.appendChild(swatch);
+            row.appendChild(name);
+
+            legendItems.appendChild(row);
+
+        }
+
+        function hexToRgba(hex, opacity) {
+
+            const clean = hex.replace('#', '');
+
+            const red = parseInt(
+                clean.substring(0, 2),
+                16
+            );
+
+            const green = parseInt(
+                clean.substring(2, 4),
+                16
+            );
+
+            const blue = parseInt(
+                clean.substring(4, 6),
+                16
+            );
+
+            return (
+                'rgba(' +
+                red + ', ' +
+                green + ', ' +
+                blue + ', ' +
+                safeOpacity(opacity) +
+                ')'
+            );
+
+        }
+
+        // ============================================
+        // LOAD ALL COUNTRIES FROM QGIS EXPORT
+        // ============================================
+
+        async function loadCountries() {
+
+            try {
+
+                const results = await Promise.all([
+
+                    loadJSON(
+                        DATA_FILES.countries
+                    ),
+
+                    loadJSON(
+                        DATA_FILES.styles
+                    )
+
+                ]);
+
+                const geojson = results[0];
+                const styles = results[1];
+
+                if (
+                    !geojson ||
+                    geojson.type !==
+                        'FeatureCollection' ||
+                    !Array.isArray(
+                        geojson.features
+                    )
+                ) {
+
+                    throw new Error(
+                        'Invalid countries.geojson.'
+                    );
+
+                }
+
+                if (!Array.isArray(styles)) {
+
+                    throw new Error(
+                        'Invalid country_styles.json.'
+                    );
+
+                }
+
+                const groupedFeatures = new Map();
+
+                geojson.features.forEach(
+                    function(feature) {
+
+                        if (
+                            !feature ||
+                            !feature.geometry
+                        ) {
+                            return;
+                        }
+
+                        const properties =
+                            feature.properties || {};
+
+                        const id = String(
+                            properties.country_id || ''
+                        ).trim();
+
+                        if (!id) {
+                            return;
+                        }
+
+                        if (!groupedFeatures.has(id)) {
+
+                            groupedFeatures.set(
+                                id,
+                                []
+                            );
+
+                        }
+
+                        groupedFeatures.get(id).push(
+                            feature
+                        );
+
+                    }
+                );
+
+                const normalizedStyles =
+                    styles.map(
+                        normalizeCountryStyle
+                    );
+
+                // Validate all country references
+                // before changing the current map.
+
+                normalizedStyles.forEach(
+                    function(settings) {
+
+                        if (
+                            countryStyles.has(
+                                settings.id
+                            )
+                        ) {
+
+                            throw new Error(
+                                'Duplicate country style: ' +
+                                settings.id
+                            );
+
+                        }
+
+                        if (
+                            !groupedFeatures.has(
+                                settings.id
+                            )
+                        ) {
+
+                            throw new Error(
+                                'Missing geometry for country: ' +
+                                settings.id
+                            );
+
+                        }
+
+                        countryStyles.set(
+                            settings.id,
+                            settings
+                        );
+
+                    }
+                );
+
+                groupedFeatures.forEach(
+                    function(features, id) {
+
+                        if (!countryStyles.has(id)) {
+
+                            throw new Error(
+                                'Missing style for country: ' +
+                                id
+                            );
+
+                        }
+
+                    }
+                );
+
+                // Keep the exported order in legend
+                // and map layers.
+
+                legendItems.replaceChildren();
+
+                normalizedStyles.forEach(
+                    function(settings, index) {
+
+                        const features =
+                            groupedFeatures.get(
+                                settings.id
+                            );
+
+                        addCountry(
+                            settings.id,
+                            features,
+                            settings,
+                            index
+                        );
+
+                        addLegendItem(settings);
+
+                    }
+                );
+
+                if (normalizedStyles.length === 0) {
+
+                    showLegendMessage(
+                        'No countries available.'
+                    );
+
+                }
+
+                console.info(
+                    'Countries loaded:',
+                    normalizedStyles.length
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Could not load country data:',
+                    error
+                );
+
+                showLegendMessage(
+                    'Country data is temporarily unavailable.'
+                );
+
+            }
+
+        }
 
         // ============================================
         // CAT MARKER SIZES
@@ -678,180 +1230,242 @@
 
         function createCatIcon() {
 
-            var zoom = map.getZoom();
-            var size;
+            const zoom = map.getZoom();
+
+            let size;
 
             if (zoom <= 3) {
+
                 size = 21;
+
             } else if (zoom <= 14) {
+
                 size = 25;
+
             } else if (zoom <= 16) {
+
                 size = 30;
+
             } else {
+
                 size = 38;
+
             }
 
             return L.icon({
+
                 iconUrl: 'images/Group 8.png',
-                iconSize: [size, size],
-                iconAnchor: [size / 2, size / 2],
-                popupAnchor: [0, -size / 2]
+
+                iconSize: [
+                    size,
+                    size
+                ],
+
+                iconAnchor: [
+                    size / 2,
+                    size / 2
+                ],
+
+                popupAnchor: [
+                    0,
+                    -size / 2
+                ]
+
             });
+
         }
 
         // ============================================
-        // ADDRESS DATA
-        //
-        // Temporary fallback for the old Pins_4.js.
-        // When QGIS exports the address field, the
-        // website will use it automatically instead.
+        // PHOTO DATA
         // ============================================
 
-        var addressFallback = {
-
-            '1': 'Lev Yashin Street 1, Tolyatti, Russia',
-
-            '2': 'Voznesensky Prospekt 15-17, Saint Petersburg, Russia',
-
-            '3': 'Place Baudoyer, 4, Paris, France',
-
-            '4': 'Lygten 33, Copenhagen, Denmark'
-
-        };
+        let photosByPin = {};
+        let selectedFeature = null;
+        let photosLoaded = false;
 
         function getPinId(feature) {
 
-            var properties = feature.properties || {};
+            const properties =
+                feature.properties || {};
 
             if (
                 properties.fid !== undefined &&
                 properties.fid !== null
             ) {
-                return String(properties.fid);
+
+                return String(
+                    properties.fid
+                );
+
             }
 
-            return String(feature.id);
+            return String(
+                feature.id
+            );
+
         }
-
-        // ============================================
-        // PHOTO DATA FROM QGIS
-        // ============================================
-
-        var photosByPin = {};
-        var selectedFeature = null;
-        var photosLoaded = false;
 
         function photoFileUrl(filename) {
 
-            var normalized = String(filename || '')
-                .replace(/\\/g, '/');
+            const normalized = String(
+                filename || ''
+            ).replace(/\\/g, '/');
 
-            var basename = normalized
+            const basename = normalized
                 .split('/')
                 .pop();
 
-            return 'Photos/' +
-                encodeURIComponent(basename);
+            return (
+                'Photos/' +
+                encodeURIComponent(
+                    basename
+                )
+            );
+
         }
 
-        function loadPhotos() {
+        async function loadPhotos() {
 
-            fetch('data/photos.json')
+            try {
 
-                .then(function(response) {
+                const records = await loadJSON(
+                    DATA_FILES.photos
+                );
 
-                    if (!response.ok) {
-                        throw new Error(
-                            'Photo data is not available'
-                        );
-                    }
+                if (!Array.isArray(records)) {
 
-                    return response.json();
-                })
-
-                .then(function(records) {
-
-                    photosByPin = {};
-
-                    if (!Array.isArray(records)) {
-                        throw new Error(
-                            'Expected an array of photo records'
-                        );
-                    }
-
-                    records.forEach(function(record) {
-
-                        var pinId = String(record.pin_id);
-                        var filename = record.photo;
-
-                        if (!filename) {
-                            return;
-                        }
-
-                        if (!photosByPin[pinId]) {
-                            photosByPin[pinId] = [];
-                        }
-
-                        photosByPin[pinId].push(
-                            photoFileUrl(filename)
-                        );
-                    });
-
-                    photosLoaded = true;
-
-                    if (selectedFeature) {
-                        showPlace(selectedFeature);
-                    }
-                })
-
-                .catch(function(error) {
-
-                    photosLoaded = false;
-
-                    console.warn(
-                        'Photo data could not be loaded:',
-                        error.message
+                    throw new Error(
+                        'Expected an array of photo records.'
                     );
 
-                    if (selectedFeature) {
-                        showPlace(selectedFeature);
+                }
+
+                const result = {};
+
+                records.forEach(function(record) {
+
+                    const pinId = String(
+                        record.pin_id
+                    );
+
+                    const filename =
+                        record.photo;
+
+                    if (!filename) {
+                        return;
                     }
+
+                    if (!result[pinId]) {
+
+                        result[pinId] = [];
+
+                    }
+
+                    const url = photoFileUrl(
+                        filename
+                    );
+
+                    if (
+                        !result[pinId].includes(
+                            url
+                        )
+                    ) {
+
+                        result[pinId].push(
+                            url
+                        );
+
+                    }
+
                 });
+
+                photosByPin = result;
+                photosLoaded = true;
+
+                if (selectedFeature) {
+
+                    showPlace(
+                        selectedFeature
+                    );
+
+                }
+
+            } catch (error) {
+
+                photosLoaded = false;
+
+                console.warn(
+                    'Photo data could not be loaded:',
+                    error
+                );
+
+                if (selectedFeature) {
+
+                    showPlace(
+                        selectedFeature
+                    );
+
+                }
+
+            }
+
         }
 
         // ============================================
         // FULL-SIZE PHOTO VIEWER
         // ============================================
 
-        var photoViewer =
-            document.getElementById('photo-viewer');
+        const photoViewer =
+            document.getElementById(
+                'photo-viewer'
+            );
 
-        var viewerImage =
-            document.getElementById('viewer-image');
+        const viewerImage =
+            document.getElementById(
+                'viewer-image'
+            );
 
         function openPhoto(src) {
 
             viewerImage.src = src;
-            photoViewer.classList.add('open');
+
+            photoViewer.classList.add(
+                'open'
+            );
+
         }
 
         function closePhoto() {
 
-            photoViewer.classList.remove('open');
-            viewerImage.removeAttribute('src');
+            photoViewer.classList.remove(
+                'open'
+            );
+
+            viewerImage.removeAttribute(
+                'src'
+            );
+
         }
 
         document.getElementById(
             'close-photo-viewer'
-        ).addEventListener('click', closePhoto);
+        ).addEventListener(
+            'click',
+            closePhoto
+        );
 
         photoViewer.addEventListener(
             'click',
             function(event) {
 
-                if (event.target === photoViewer) {
+                if (
+                    event.target === photoViewer
+                ) {
+
                     closePhoto();
+
                 }
+
             }
         );
 
@@ -859,31 +1473,39 @@
             'keydown',
             function(event) {
 
-                if (event.key === 'Escape') {
+                if (
+                    event.key === 'Escape'
+                ) {
+
                     closePhoto();
+
                 }
+
             }
         );
 
         // ============================================
-        // SHOW SELECTED PLACE IN RIGHT PANEL
+        // SELECTED PLACE
         // ============================================
 
         function showPlace(feature) {
 
             selectedFeature = feature;
 
-            var properties = feature.properties || {};
+            const properties =
+                feature.properties || {};
 
-            var placeName =
-                properties.name || 'Unknown location';
+            const placeName =
+                properties.name ||
+                'Unknown location';
 
-            var pinId = getPinId(feature);
+            const pinId = getPinId(
+                feature
+            );
 
-            var placeAddress =
-                properties.address ||
-                addressFallback[pinId] ||
-                '';
+            const placeAddress = String(
+                properties.address || ''
+            );
 
             document.getElementById(
                 'place-title'
@@ -893,17 +1515,17 @@
                 'place-address'
             ).textContent = placeAddress;
 
-            var description =
+            const description =
                 document.getElementById(
                     'place-description'
                 );
 
-            var gallery =
+            const gallery =
                 document.getElementById(
                     'photo-gallery'
                 );
 
-            gallery.innerHTML = '';
+            gallery.replaceChildren();
 
             if (!photosLoaded) {
 
@@ -911,9 +1533,11 @@
                     'Photos will appear here soon.';
 
                 return;
+
             }
 
-            var photos = photosByPin[pinId] || [];
+            const photos =
+                photosByPin[pinId] || [];
 
             if (photos.length === 0) {
 
@@ -921,6 +1545,7 @@
                     'No photos available for this location.';
 
                 return;
+
             }
 
             description.textContent =
@@ -928,54 +1553,82 @@
                     ? '1 photo'
                     : photos.length + ' photos';
 
-            photos.forEach(function(src, index) {
+            photos.forEach(
+                function(src, index) {
 
-                var img = document.createElement('img');
-
-                img.className = 'gallery-photo';
-                img.src = src;
-
-                img.alt = placeName +
-                    ' — photo ' + (index + 1);
-
-                img.loading = 'lazy';
-
-                img.addEventListener(
-                    'click',
-                    function() {
-                        openPhoto(src);
-                    }
-                );
-
-                img.addEventListener(
-                    'error',
-                    function() {
-
-                        img.style.display = 'none';
-
-                        console.warn(
-                            'Could not load photo:',
-                            src
+                    const img =
+                        document.createElement(
+                            'img'
                         );
-                    }
-                );
 
-                gallery.appendChild(img);
-            });
+                    img.className =
+                        'gallery-photo';
+
+                    img.src = src;
+
+                    img.alt =
+                        placeName +
+                        ' — photo ' +
+                        (index + 1);
+
+                    img.loading = 'lazy';
+
+                    img.addEventListener(
+                        'click',
+                        function() {
+
+                            openPhoto(src);
+
+                        }
+                    );
+
+                    img.addEventListener(
+                        'error',
+                        function() {
+
+                            img.style.display =
+                                'none';
+
+                            console.warn(
+                                'Could not load photo:',
+                                src
+                            );
+
+                        }
+                    );
+
+                    gallery.appendChild(
+                        img
+                    );
+
+                }
+            );
+
         }
 
         // ============================================
         // PINS
         // ============================================
 
-        map.createPane('pane_Pins_4');
+        map.createPane(
+            'pane_Pins_4'
+        );
 
         map.getPane(
             'pane_Pins_4'
         ).style.zIndex = 404;
 
-        var layer_Pins_4 = L.geoJSON(
-            json_Pins_4,
+        const pinsData = (
+            typeof json_Pins_4 !== 'undefined'
+        )
+            ? json_Pins_4
+            : {
+                type: 'FeatureCollection',
+                features: []
+            };
+
+        const layer_Pins_4 = L.geoJSON(
+            pinsData,
             {
 
                 pane: 'pane_Pins_4',
@@ -985,10 +1638,18 @@
                     latlng
                 ) {
 
-                    return L.marker(latlng, {
-                        icon: createCatIcon(),
-                        pane: 'pane_Pins_4'
-                    });
+                    return L.marker(
+                        latlng,
+                        {
+
+                            icon: createCatIcon(),
+
+                            pane:
+                                'pane_Pins_4'
+
+                        }
+                    );
+
                 },
 
                 onEachFeature: function(
@@ -996,18 +1657,30 @@
                     layer
                 ) {
 
-                    var placeName =
+                    const placeName = (
                         feature.properties &&
                         feature.properties.name
+                    )
                         ? feature.properties.name
                         : 'Location';
 
-                    layer.bindPopup(placeName);
+                    layer.bindPopup(
+                        placeName
+                    );
 
-                    layer.on('click', function() {
-                        showPlace(feature);
-                    });
+                    layer.on(
+                        'click',
+                        function() {
+
+                            showPlace(
+                                feature
+                            );
+
+                        }
+                    );
+
                 }
+
             }
         );
 
@@ -1017,38 +1690,99 @@
         // DYNAMIC CAT SIZE
         // ============================================
 
-        map.on('zoomend', function() {
+        map.on(
+            'zoomend',
+            function() {
 
-            var icon = createCatIcon();
+                const icon = createCatIcon();
 
-            layer_Pins_4.eachLayer(
-                function(layer) {
+                layer_Pins_4.eachLayer(
+                    function(layer) {
 
-                    if (layer instanceof L.Marker) {
-                        layer.setIcon(icon);
+                        if (
+                            layer instanceof L.Marker
+                        ) {
+
+                            layer.setIcon(
+                                icon
+                            );
+
+                        }
+
                     }
+                );
+
+            }
+        );
+
+        // ============================================
+        // RESTORE GRADIENTS AFTER MAP UPDATES
+        // ============================================
+
+        function updateAllCountryGradients() {
+
+            countryLayers.forEach(
+                function(item) {
+
+                    item.updateGradient();
+
                 }
             );
-        });
+
+        }
+
+        map.on(
+            'zoomend',
+            function() {
+
+                requestAnimationFrame(
+                    updateAllCountryGradients
+                );
+
+            }
+        );
+
+        map.on(
+            'viewreset',
+            function() {
+
+                requestAnimationFrame(
+                    updateAllCountryGradients
+                );
+
+            }
+        );
 
         // ============================================
         // MAP RESIZING
         // ============================================
 
-        requestAnimationFrame(function() {
-            map.invalidateSize();
-        });
+        requestAnimationFrame(
+            function() {
+
+                map.invalidateSize();
+
+            }
+        );
 
         window.addEventListener(
             'resize',
             function() {
+
                 map.invalidateSize();
+
+                requestAnimationFrame(
+                    updateAllCountryGradients
+                );
+
             }
         );
 
         // ============================================
-        // LOAD PHOTOS
+        // INITIAL DATA LOADING
         // ============================================
+
+        loadCountries();
 
         loadPhotos();
 
